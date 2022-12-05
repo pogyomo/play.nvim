@@ -33,10 +33,10 @@ function M:connect(path, callback)
     self.pipe = uv.new_pipe()
     self.pipe:connect(path, wrap(function(err1)
         assert(not err1, err1)
-        self.pipe:read_start(function(err2, data)
+        self.pipe:read_start(wrap(function(err2, data)
             assert(not err2, err2)
             callback(data)
-        end)
+        end))
     end))
 end
 
