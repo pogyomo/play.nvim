@@ -16,11 +16,17 @@ function M:new()
     })
 end
 
+---Check whether connection is established or not.
+---@return boolean
+function M:is_connected()
+    return self.pipe ~= nil and self.pipe:getpeername()
+end
+
 ---Connect to given unix domain socket.
 ---@param path string Path to the socket.
 ---@param callback fun(data: string)
 function M:connect(path, callback)
-    if self.pipe and self.pipe:getpeername() then
+    if self:is_connected() then
         error(string.format("Connection already established: %s", self.pipe:getpeername()))
     end
 
@@ -34,6 +40,14 @@ function M:connect(path, callback)
     end))
 end
 
+---Disconnect from the unix domain socket.
+function M:disconnect()
+    if self:is_connected() then
+        self.pipe:close()
+        self.pipe = nil
+    end
+end
+
 ---Write given data to the socket.
 ---@param data string
 function M:write(data)
@@ -41,12 +55,6 @@ function M:write(data)
     self.pipe:write(data, function(err)
         assert(not err, err)
     end)
-end
-
----Disconnect from the unix domain socket.
-function M:disconnect()
-    self.pipe:close()
-    self.pipe = nil
 end
 
 return M
