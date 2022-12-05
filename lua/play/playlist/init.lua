@@ -23,8 +23,9 @@ end
 ---Add a playlist.
 ---@param name string Name of the playlist.
 ---@param playlist PlaylistData Data of the playlist.
----@param opts AddPlaylistOption Option of add behavior.
+---@param opts? AddPlaylistOption Option of add behavior.
 function M:add(name, playlist, opts)
+    opts = opts or { force = false }
     if self.playlists[name] and opts.force then -- When playlist already exist and force is true
         self.playlists[name] = playlist
     else
