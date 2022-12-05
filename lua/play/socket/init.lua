@@ -1,4 +1,4 @@
-local uv = vim.loop
+local uv   = vim.loop
 local wrap = vim.schedule_wrap
 
 ---Handle the connection to unix domain socket.
@@ -37,7 +37,7 @@ end
 ---Write given data to the socket.
 ---@param data string
 function M:write(data)
-    assert(not self.pipe, "Connection isn't established.")
+    assert(self.pipe, "Connection isn't established.")
     self.pipe:write(data, function(err)
         assert(not err, err)
     end)
