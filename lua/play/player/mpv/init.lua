@@ -130,17 +130,19 @@ end
 ---@generic T
 ---@param name string Name of the property.
 ---@param value T Value to set.
-function M:__change_property(name, value)
-    self:__exec_command("set_property", { name, value })
+---@param on_success? fun(data: table) Called when command is executed successfully.
+function M:__change_property(name, value, on_success)
+    self:__exec_command("set_property", { name, value }, on_success)
 end
 
 ---Change property by using current property.
 ---@generic T
 ---@param name string Name of the property.
 ---@param changer fun(property: T): T
-function M:__change_property_by_using_curent(name, changer)
-    self:__exec_command("get_property", { name }, function(data)
-        self:__change_property(name, changer(data.data))
+---@param on_success? fun(data: table) Called when command is executed successfully.
+function M:__change_property_by_using_curent(name, changer, on_success)
+    self:__exec_command("get_property", name, function(data)
+        self:__change_property(name, changer(data.data), on_success)
     end)
 end
 
