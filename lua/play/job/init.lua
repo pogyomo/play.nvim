@@ -15,16 +15,22 @@ end
 
 ---Start cmd as a job.
 ---@param cmd  string Name of command to start as a job.
----@param args string[] Arguments of this command.
-function M:start(cmd, args)
+---@param args? string[] Arguments of this command.
+---@param opts? table See jobstart.
+function M:start(cmd, args, opts)
     if self.id then
         return
     end
 
-    for _, arg in ipairs(args) do
+    for _, arg in ipairs(args or {}) do
         cmd = string.format("%s %s", cmd, arg)
     end
-    self.id = vim.fn.jobstart(cmd)
+
+    if opts then
+        self.id = vim.fn.jobstart(cmd, opts)
+    else
+        self.is = vim.fn.jobstart(cmd)
+    end
     if self.id == 0 or self.id == -1 then
         self.id = nil
         error("Faild to start job: " .. cmd)
