@@ -3,12 +3,18 @@ local socket = require("play.pipe.socket")
 local pair   = require("play.pipe.pair")
 local socket_path = "/tmp/mpvsocket"
 
----Create a command with id.
+---Create a command.
 ---@param name string Name of command.
+---@param params any | any[] Parameters of this command.
 ---@param id integer Request id.
----@param ... any Parameters of this command.
-local function create_command(name, id, ...)
-    return vim.fn.json_encode({ command = { name, ... }, request_id = id }) .. "\n"
+---@return string
+local function create_command(name, params, id)
+    params = type(params) == "table" and params or { params }
+    local command = { command = { name }, request_id = id }
+    for _, param in ipairs(params) do
+        table.insert(command.command, param)
+    end
+    return vim.fn.json_encode(command) .. "\n"
 end
 
 ---A simple handler of mpv.
@@ -58,23 +64,23 @@ end
 ---Load file from given path/url.
 ---@param path string Path or url to load.
 function M:loadfile(path)
-    self.socket:write(create_command("loadfile", vim.fn.expand(path)))
+    self:exec_command("loadfile", vim.fn.expand(path))
 end
 
 ---Seek playback time by given diff.
 ---@param diff integer
 function M:seek(diff)
-    self.socket:write(create_command("seek", diff))
+    self:exec_command("seek", diff)
 end
 
 ---Pause the playback.
 function M:pause()
-    self.socket:write(create_command("set_property", 0, "pause", true))
+    self:change_property("pause", true)
 end
 
 ---Resume the playback.
 function M:resume()
-    self.socket:write(create_command("set_property", 0, "pause", false))
+    self:change_property("pause", false)
 end
 
 ---Toggle pause and resume.
@@ -92,24 +98,45 @@ function M:volume(diff)
     end)
 end
 
+
+---Execute command.
+---@param name string Name of command.
+---@param params any | any[] Parameters of this command.
+---@param on_success? fun(data: table) Called when command is executed successfully.
+function M:exec_command(name, params, on_success)
+    local id = math.floor(math.random(1e10)) -- Get a unique id.
+    self.socket:write(create_command(name, params, id))
+    self.pair:read_start(function(data)
+        for d in data:gmatch("[^\n]+") do -- When a reply have multiple message, split it by newline.
+            d = vim.fn.json_decode(d)
+            if d.error ~= "success" and d.request_id == id then
+                self.pair:read_stop()
+                error(("Failed to execute command '%s': %s"):format(name, d.error))
+            elseif d.error == "success" and d.request_id == id then
+                self.pair:read_stop()
+                if on_success then
+                    on_success(d)
+                end
+            end
+        end
+    end)
+end
+
+---Change property by using given value
+---@generic T
+---@param name string Name of the property.
+---@param value T Value to set.
+function M:change_property(name, value)
+    self:exec_command("set_property", { name, value })
+end
+
 ---Change property by using current property.
 ---@generic T
 ---@param name string Name of the property.
 ---@param changer fun(property: T): T
 function M:change_property_by_using_curent(name, changer)
-    local id = math.floor(math.random(1e10)) -- Get a unique id.
-    self.socket:write(create_command("get_property", id, name))
-    self.pair:read_start(function(data)
-        for d in data:gmatch("[^\n]+") do
-            d = vim.fn.json_decode(d)
-            if d.error == "success" and d.request_id == id then
-                self.socket:write(create_command("set_property", 0, name, changer(d.data)))
-                self.pair:read_stop()
-                return
-            elseif d.request_id ~= id then
-                error(("Failed to change property %s: %s"):format(name, d.error))
-            end
-        end
+    self:exec_command("get_property", { name }, function(data)
+        self:change_property(name, changer(data.data))
     end)
 end
 
