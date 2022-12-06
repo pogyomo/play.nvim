@@ -29,6 +29,20 @@ function M:create()
     self.write = fds.write
 end
 
+---Close file descriptors.
+function M:close()
+    if self.read then
+        local _, err = uv.fs_close(self.read)
+        assert(not err, err)
+        self.read = nil
+    end
+    if self.write then
+        local _, err = uv.fs_close(self.write)
+        assert(not err, err)
+        self.write = nil
+    end
+end
+
 ---Take read file descriptor, or throw error.
 ---@return integer
 function M:take_read()

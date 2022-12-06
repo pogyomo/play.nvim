@@ -34,6 +34,7 @@ end
 
 ---Finish the connection and close read/write pipe.
 function M:disconnect()
+    self.rwfd:close()
     self.pipes.write:close()
     self.pipes.read:close()
 end
