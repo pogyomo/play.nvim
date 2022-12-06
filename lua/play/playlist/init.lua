@@ -1,43 +1,44 @@
+---A class to manage playlists.
 ---@class PlaylistManager
----@field playlists table<string, PlaylistData> Name to playlist table.
+---@field name_to_playlist table<string, PlaylistData>
 
+---A class to represent a playlist.
 ---@class PlaylistData
----@field list_of_name string[]
+---@field path_list string[]
 
----@class AddPlaylistOption
----@field force boolean Force to rewrite playlist which already exist .
+---@class PlaylistManagerAddOption
+---@field force boolean When true, overwrite exist playlist.
 
 ---@class PlaylistManager
 local M = {}
 
----Create a new playlist manager instance.
----@param playlists? table<string, PlaylistData>
-function M:new(playlists)
+---Create a new PlaylistManager instance.
+---@return PlaylistManager
+function M:new()
     return setmetatable({
-        playlists = playlists or {}
+        name_to_playlist = {}
     }, {
-        __index = self,
+        __index = self
     })
 end
 
----Add a playlist.
+---Add a playlist with name.
 ---@param name string Name of the playlist.
----@param playlist PlaylistData Data of the playlist.
----@param opts? AddPlaylistOption Option of add behavior.
+---@param playlist PlaylistData The playlist to add.
+---@param opts PlaylistManagerAddOption Options. 
 function M:add(name, playlist, opts)
-    opts = opts or { force = false }
-    if self.playlists[name] and opts.force then -- When playlist already exist and force is true
-        self.playlists[name] = playlist
+    if self.name_to_playlist[name] and opts.force then
+        self.name_to_playlist[name] = playlist
     else
-        self.playlists[name] = self.playlists[name] or playlist
+        self.name_to_playlist[name] = self.name_to_playlist[name] or playlist
     end
 end
 
 ---Take a playlist which associated with the name.
----@param name string
----@return PlaylistData | nil
+---@param name string Name of target playlist.
+---@return PlaylistData | nil # Nil if there is no such playlist.
 function M:take(name)
-    return self.playlists[name]
+    return self.name_to_playlist[name]
 end
 
 return M
