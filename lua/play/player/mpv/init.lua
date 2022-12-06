@@ -102,7 +102,6 @@ function M:volume(diff)
     end)
 end
 
-
 ---Execute command.
 ---@param name string Name of command.
 ---@param params any | any[] Parameters of this command.
