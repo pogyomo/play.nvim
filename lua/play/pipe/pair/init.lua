@@ -5,7 +5,7 @@ local wrap = vim.schedule_wrap
 ---A handler for a pair of connected pipe.
 ---This will be useful to communicate asynchronously.
 ---@class PairPipeHandler
----@field rwfd  RWFileDescriptorHandler File descriptors
+---@field rwfd  RWFileDescriptorHandler Read/Write file descriptors
 ---@field pipes { read: PipeHander, write: PipeHander }
 local M = {}
 
@@ -24,12 +24,18 @@ function M:new()
 end
 
 ---Create a connection of pipes.
-function M:create()
+function M:connect()
     self.rwfd:create()
     self.pipes.read:open()
     self.pipes.read:take():open(self.rwfd:take_read())
     self.pipes.write:open()
     self.pipes.write:take():open(self.rwfd:take_write())
+end
+
+---Finish the connection and close read/write pipe.
+function M:disconnect()
+    self.pipes.write:close()
+    self.pipes.read:close()
 end
 
 ---Write a data for read.

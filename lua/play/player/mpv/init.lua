@@ -38,7 +38,7 @@ function M:start_file_without_video(path)
         "--no-terminal",
         path,
     })
-    self.pair:create()
+    self.pair:connect()
     vim.defer_fn(function()
         self.socket:connect("/tmp/mpvsocket")
         self.socket:read_start(function(data)
@@ -49,6 +49,7 @@ end
 
 ---Stop playback and exit from mpv.
 function M:stop()
+    self.pair:disconnect()
     self.socket:disconnect()
     self.mpv_job:stop()
 end
