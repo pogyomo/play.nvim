@@ -64,28 +64,28 @@ end
 ---Load file from given path/url.
 ---@param path string Path or url to load.
 function M:loadfile(path)
-    self:exec_command("loadfile", vim.fn.expand(path))
+    self:__exec_command("loadfile", vim.fn.expand(path))
 end
 
 ---Seek playback time by given diff.
 ---@param diff integer
 function M:seek(diff)
-    self:exec_command("seek", diff)
+    self:__exec_command("seek", diff)
 end
 
 ---Pause the playback.
 function M:pause()
-    self:change_property("pause", true)
+    self:__change_property("pause", true)
 end
 
 ---Resume the playback.
 function M:resume()
-    self:change_property("pause", false)
+    self:__change_property("pause", false)
 end
 
 ---Toggle pause and resume.
 function M:toggle()
-    self:change_property_by_using_curent("pause", function(property)
+    self:__change_property_by_using_curent("pause", function(property)
         return not property
     end)
 end
@@ -93,7 +93,7 @@ end
 ---Increase/Decrease the volume by given diff.
 ---@param diff integer How much to change volume.
 function M:volume(diff)
-    self:change_property_by_using_curent("volume", function(property)
+    self:__change_property_by_using_curent("volume", function(property)
         return property + diff
     end)
 end
@@ -103,7 +103,7 @@ end
 ---@param name string Name of command.
 ---@param params any | any[] Parameters of this command.
 ---@param on_success? fun(data: table) Called when command is executed successfully.
-function M:exec_command(name, params, on_success)
+function M:__exec_command(name, params, on_success)
     local id = math.floor(math.random(1e10)) -- Get a unique id.
     self.socket:write(create_command(name, params, id))
     self.pair:read_start(function(data)
@@ -126,17 +126,17 @@ end
 ---@generic T
 ---@param name string Name of the property.
 ---@param value T Value to set.
-function M:change_property(name, value)
-    self:exec_command("set_property", { name, value })
+function M:__change_property(name, value)
+    self:__exec_command("set_property", { name, value })
 end
 
 ---Change property by using current property.
 ---@generic T
 ---@param name string Name of the property.
 ---@param changer fun(property: T): T
-function M:change_property_by_using_curent(name, changer)
-    self:exec_command("get_property", { name }, function(data)
-        self:change_property(name, changer(data.data))
+function M:__change_property_by_using_curent(name, changer)
+    self:__exec_command("get_property", { name }, function(data)
+        self:__change_property(name, changer(data.data))
     end)
 end
 
