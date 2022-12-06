@@ -30,7 +30,7 @@ function M:new()
     return setmetatable({
         mpv_job = job:new(),
         socket  = socket:new(),
-        pair    = pair:new()
+        pair    = pair:new(),
     }, {
         __index = self
     })
@@ -44,6 +44,10 @@ function M:start_file_without_video(path)
         "--no-video",
         "--no-terminal",
         path,
+    }, {
+        on_exit = function()
+            self:stop()
+        end
     })
     self.pair:connect()
     vim.defer_fn(function()
