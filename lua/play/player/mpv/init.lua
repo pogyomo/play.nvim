@@ -1,6 +1,6 @@
+local job    = require("play.job")
 local socket = require("play.pipe.socket")
 local pair   = require("play.pipe.pair")
-local job    = require("play.player.mpv.job")
 
 ---Create a command with id.
 ---@param name string Name of command.
@@ -32,7 +32,12 @@ end
 ---Play given file without video (only sound).
 ---@param path string
 function M:start_file_without_video(path)
-    self.mpv_job:start("mpv --input-ipc-server=/tmp/mpvsocket --no-video --no-terminal " .. path)
+    self.mpv_job:start("mpv", {
+        "--input-ipc-server=/tmp/mpvsocket",
+        "--no-video",
+        "--no-terminal",
+        path,
+    })
     self.pair:create()
     vim.defer_fn(function()
         self.socket:connect("/tmp/mpvsocket")
