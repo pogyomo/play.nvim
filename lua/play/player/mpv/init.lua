@@ -89,7 +89,7 @@ end
 
 ---Toggle pause and resume.
 function M:toggle()
-    self:__change_property_by_using_curent("pause", function(property)
+    self:__change_property_by_using_current("pause", function(property)
         return not property
     end)
 end
@@ -97,7 +97,7 @@ end
 ---Increase/Decrease the volume by given diff.
 ---@param diff integer How much to change volume.
 function M:volume(diff)
-    self:__change_property_by_using_curent("volume", function(property)
+    self:__change_property_by_using_current("volume", function(property)
         return property + diff
     end)
 end
@@ -140,7 +140,7 @@ end
 ---@param name string Name of the property.
 ---@param changer fun(property: T): T
 ---@param on_success? fun(data: table) Called when command is executed successfully.
-function M:__change_property_by_using_curent(name, changer, on_success)
+function M:__change_property_by_using_current(name, changer, on_success)
     self:__exec_command("get_property", name, function(data)
         self:__change_property(name, changer(data.data), on_success)
     end)
