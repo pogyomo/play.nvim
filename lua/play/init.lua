@@ -6,12 +6,12 @@ local M = {
     mpv = mpv:new()
 }
 
-function M:start(path)
-    self.mpv:start_file_without_video(path)
-end
-
-function M:load(path)
-    self.mpv:loadfile(path)
+function M:loadfile(path)
+    if self.mpv:is_running() then
+        self.mpv:loadfile(path)
+    else
+        self.mpv:start_file_without_video(path)
+    end
 end
 
 function M:stop()
