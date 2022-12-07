@@ -18,7 +18,7 @@ end
 ---@param args? string[] Arguments of this command.
 ---@param opts? table See jobstart.
 function M:start(cmd, args, opts)
-    if self.id then
+    if self:is_running() then
         return
     end
 
@@ -39,12 +39,18 @@ end
 
 ---Stop this job.
 function M:stop()
-    if not self.id then
+    if not self:is_running() then
         return
     end
 
     vim.fn.jobstop(self.id)
     self.id = nil
+end
+
+---Whether job is running or not.
+---@return boolean # True if job is running.
+function M:is_running()
+    return self.id ~= nil
 end
 
 return M
