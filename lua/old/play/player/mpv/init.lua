@@ -23,6 +23,38 @@ function M:is_running()
     return self.mpv_job:is_running()
 end
 
+---Execute command.
+---@param name string Name of command.
+---@param params any | any[] Parameters of this command.
+---@param on_success? fun(data: table) Called when command is executed successfully.
+function M:exec_command(name, params, on_success)
+    if self:is_running() then
+        cmd:new(socket_path):execute(name, params, on_success)
+    end
+end
+
+---Change property by using given value
+---@generic T
+---@param name string Name of the property.
+---@param value T Value to set.
+---@param on_success? fun(data: table) Called when command is executed successfully.
+function M:change_property(name, value, on_success)
+    if self:is_running() then
+        cmd:new(socket_path):change_property(name, value, on_success)
+    end
+end
+
+---Change property changer.
+---@generic T
+---@param name string Name of the property.
+---@param changer fun(property: T): T
+---@param on_success? fun(data: table) Called when command is executed successfully.
+function M:change_property_with(name, changer, on_success)
+    if self:is_running() then
+        cmd:new(socket_path):change_property_with(name, changer, on_success)
+    end
+end
+
 ---Play given file without video (only sound).
 ---@param path string
 function M:start_file_without_video(path)
@@ -46,28 +78,28 @@ end
 ---Load file from given path/url.
 ---@param path string Path or url to load.
 function M:loadfile(path)
-    cmd:new(socket_path):execute("loadfile", vim.fn.expand(path))
+    self:exec_command("loadfile", vim.fn.expand(path))
 end
 
 ---Seek playback time by given diff.
 ---@param diff integer
 function M:seek(diff)
-    cmd:new(socket_path):execute("seek", diff)
+    self:exec_command("seek", diff)
 end
 
 ---Pause the playback.
 function M:pause()
-    cmd:new(socket_path):change_property("pause", true)
+    self:change_property("pause", true)
 end
 
 ---Resume the playback.
 function M:resume()
-    cmd:new(socket_path):change_property("pause", false)
+    self:change_property("pause", false)
 end
 
 ---Toggle pause and resume.
 function M:toggle()
-    cmd:new(socket_path):change_property_with("pause", function(property)
+    self:change_property_with("pause", function(property)
         return not property
     end)
 end
@@ -75,7 +107,7 @@ end
 ---Increase/Decrease the volume by given diff.
 ---@param diff integer How much to change volume.
 function M:volume(diff)
-    cmd:new(socket_path):change_property_with("volume", function(property)
+    self:change_property_with("volume", function(property)
         return property + diff
     end)
 end
