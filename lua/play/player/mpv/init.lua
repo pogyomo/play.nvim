@@ -9,7 +9,7 @@ local socket_path = "/tmp/mpvsocket"
 ---@param id integer Request id.
 ---@return string
 local function create_command(name, params, id)
-    params = type(params) == "table" and params or { params }
+    params = type(params) == "table" and params or { params } -- When params not table, change it to table.
     local command = { command = { name }, request_id = id }
     for _, param in ipairs(params) do
         table.insert(command.command, param)
@@ -34,6 +34,12 @@ function M:new()
     }, {
         __index = self
     })
+end
+
+---Whether mpv is running or not.
+---@return boolean # True if mpv is running.
+function M:is_running()
+    return self.mpv_job:is_running()
 end
 
 ---Play given file without video (only sound).
@@ -107,6 +113,10 @@ end
 ---@param params any | any[] Parameters of this command.
 ---@param on_success? fun(data: table) Called when command is executed successfully.
 function M:__exec_command(name, params, on_success)
+    if not self:is_running() then
+        return
+    end
+
     local id = math.floor(math.random(1e10)) -- Get a unique id.
     self.socket:write(create_command(name, params, id))
     self.pair:read_start(function(data)
