@@ -1,5 +1,6 @@
-local socket = require("play.pipe.socket")
-local pair   = require("play.pipe.pair")
+local socket = require("play.utils.pipe.socket")
+local pair   = require("play.utils.pipe.pair")
+
 
 ---Create a command.
 ---@param name string Name of command.
